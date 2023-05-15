@@ -1,72 +1,44 @@
-import React, { useState } from "react";
-import "./style.css";
+import React, {useEffect, useState}  from "react";
+import axios from 'axios';
+import Home from "./components/Home";
+import ProductsList from "./components/products/ProductsList";
+import ProductCard from "./components/products/ProductCard";
+
+import {Route, Link, Routes} from 'react-router-dom';
 
 function App() {
-  const [newItem, setNewItem] = useState("");
-  const [todos, setTodos] = useState([]);
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  const [products, setProducts] = useState({});
 
-    setTodos(currentTodos => {
-      return [
-        ...currentTodos, 
-        {id: crypto.randomUUID(), title: newItem, completed: false},
-      ]
-    })
-
-    setNewItem("");
-   
-  }
-
-  function toggleTodo(id, completed) {
-    setTodos(currentTodos => {
-       return currentTodos.map(todo => {
-         if (todo.id === id) {
-           todo.completed = completed;
-           return {...todo, completed}
-         }
-
-         return todo;
-       })
-    })
-  }
-
-  function deleteItem(id) {
-    const newArray = todos.filter(todo => todo.id !== id);
-    setTodos(newArray);
-  }
+  useEffect(() => {
+    axios.get('https://fakestoreapi.com/products') 
+     .then((res) => {
+      //  console.log("Response",res.data)
+       setProducts(res.data);
+     }) 
+     .catch((err) => {
+       console.log(err)
+     })
+          
+  }, [])
 
   return (
-    <>
-      <form onSubmit={handleSubmit}>
-        <div className="form-row">
-          <label htmlFor="item">New Item</label>
-          <input
-            type="text"
-            id="item"
-            value={newItem}
-            onChange={(e) => setNewItem(e.target.value)}
-          />
-        </div>
-        <button className="btn">Add</button>
-        <h1 className="header">Todo List</h1>
-        <ul>
-          {todos.map(todo => {
-            return (
-              <li key={todo.id}>
-                <label>
-                  <input type="checkbox" checked={todo.completed}
-                  onChange={e => toggleTodo(todo.id, e.target.checked)}/>
-                   {todo.title}
-                </label>
-                <button className="btn-danger" onClick={() => deleteItem(todo.id)}>Delete</button>
-              </li>
-            )
-          })}
-        </ul>
-      </form>
-    </>
+    <div className=" App">
+      <nav>
+        <h1 className="store-header">
+          <Link to='/' className="title">Som Products</Link>
+        </h1>
+        <div className="nav-links">
+         <Link to="/">Home</Link>
+         <Link to="/products">Shop</Link>
+      </div>
+      </nav>
+      <Routes>
+         <Route path="/products/:id" element={<ProductCard products={products}/>}></Route>
+         <Route path="/products" element={<ProductsList products={products}/>}></Route>
+         <Route path="/" element={<Home/>}></Route>
+      </Routes>
+    </div>
   );
 }
 
